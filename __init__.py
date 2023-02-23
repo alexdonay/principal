@@ -55,17 +55,16 @@ def user_has_permission(user, permission_name):
     if user.role == 'admin':
         return True
     elif user.role == 'user':
-        if permission_name == 'view':
-            return True
+        return True
     return False
 
 # criando uma permissão para visualizar conteúdo
-view_permission = Permission(RoleNeed('admin'), 'view')
-
+admin_permission = Permission(RoleNeed('admin'))
+user_permission = Permission(RoleNeed('user'))
 # criando uma página inicial com conteúdo restrito
 @app.route('/')
 @login_required
-@view_permission.require()
+@user_permission.require()
 def home():
     return render_template('home.html')
 # criando uma página de login
