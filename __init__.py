@@ -8,10 +8,11 @@ app.secret_key = 'sua_chave_secreta_aqui'
 # configurando o Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'
+
 @login_manager.user_loader
 def load_user(user_id):
     return get_user_by_id(user_id)
+
 # configurando o Flask-Principal
 principal = Principal(app)
 
@@ -45,28 +46,25 @@ def get_user_by_username(username):
         if user.username == username:
             return user
     return None
+
+# Configurando o identify
 @identity_loaded.connect_via(app)
 def on_identity_loaded(sender, identity):
     identity.user = current_user
     if hasattr(current_user, 'role'):
         identity.provides.add(RoleNeed(current_user.role))
-# verificando se um usuário tem uma permissão
-def user_has_permission(user, permission_name):
-    if user.role == 'admin':
-        return True
-    elif user.role == 'user':
-        return True
-    return False
 
 # criando uma permissão para visualizar conteúdo
 admin_permission = Permission(RoleNeed('admin'))
 user_permission = Permission(RoleNeed('user'))
+
 # criando uma página inicial com conteúdo restrito
 @app.route('/')
 @login_required
 @user_permission.require()
 def home():
     return render_template('home.html')
+
 # criando uma página de login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -94,5 +92,6 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
+# Inicia a aplicação
 if __name__ == '__main__':
     app.run(debug=True)
